@@ -36,6 +36,7 @@ const Account: React.FC = () => {
         setError(showLogin ? 'Email hoặc mật khẩu không đúng' : 'Đăng ký thất bại');
       }
     } catch (err) {
+      console.error('handleSubmit error:', err);
       setError('Có lỗi xảy ra, vui lòng thử lại');
     } finally {
       setLoading(false);

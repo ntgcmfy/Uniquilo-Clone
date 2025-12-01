@@ -37,6 +37,7 @@ const ColabConnection: React.FC<ColabConnectionProps> = ({ onConnectionChange })
       
       onConnectionChange?.(connected);
     } catch (err) {
+      console.error('updateConnection error:', err);
       setError('Lỗi khi kiểm tra kết nối');
       setIsConnected(false);
       onConnectionChange?.(false);
@@ -64,6 +65,7 @@ const ColabConnection: React.FC<ColabConnectionProps> = ({ onConnectionChange })
       await checkConnection();
       setShowSettings(false);
     } catch (err) {
+      console.error('updateConnection error:', err);
       setError('Lỗi khi cập nhật kết nối');
     } finally {
       setIsChecking(false);
