@@ -1,23 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { supabase } from '../../supabaseClient';
-
-export interface ProductDto {
-  id: string;
-  name: string;
-  price: number;
-  originalprice: number;
-  category: string;
-  subcategory: string;
-  images: any;        // JSON array
-  colors: any;        // JSON array
-  sizes: any;         // JSON array
-  description: string;
-  features: any;      // JSON object
-  isnew: boolean;
-  issale: boolean;
-  rating: number;
-  reviewcount: number;
-}
+import { ProductDto } from './dto/product.dto';
 
 @Injectable()
 export class ProductService {

@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
 import { ProductService } from './product.service';
+import { ProductDto } from './dto/product.dto';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { AdminGuard } from '../../common/guards/admin.guard';
 
@@ -19,13 +20,13 @@ export class ProductController {
 
   @Post()
   @UseGuards(AuthGuard, AdminGuard)
-  async create(@Body() dto: any) {
+  async create(@Body() dto: ProductDto) {
     return await this.productService.create(dto);
   }
 
   @Put(':id')
   @UseGuards(AuthGuard, AdminGuard)
-  async update(@Param('id') id: string, @Body() dto: any) {
+  async update(@Param('id') id: string, @Body() dto: Partial<ProductDto>) {
     return await this.productService.update(id, dto);
   }
 
