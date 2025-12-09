@@ -1,5 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable, ForbiddenException } from '@nestjs/common';
-import { supabase } from 'src/supabaseClient';
+import { supabase } from 'src/supabase/supabaseClient';
 
 @Injectable()
 export class AdminGuard implements CanActivate {

@@ -1,38 +1,33 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
 import { ProductService } from './product.service';
-import { ProductDto } from './dto/product.dto';
-import { AuthGuard } from '../../common/guards/auth.guard';
-import { AdminGuard } from '../../common/guards/admin.guard';
+import type { Product } from './product.dto';
 
 @Controller('products')
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(private readonly service: ProductService) {}
 
   @Get()
-  async getAll() {
-    return await this.productService.getAll();
+  findAll() {
+    return this.service.findAll();
   }
 
   @Get(':id')
-  async getById(@Param('id') id: string) {
-    return await this.productService.getById(id);
+  findOne(@Param('id') id: string) {
+    return this.service.findOne(id);
   }
 
   @Post()
-  @UseGuards(AuthGuard, AdminGuard)
-  async create(@Body() dto: ProductDto) {
-    return await this.productService.create(dto);
+  create(@Body() product: Product) {
+    return this.service.create(product);
   }
 
   @Put(':id')
-  @UseGuards(AuthGuard, AdminGuard)
-  async update(@Param('id') id: string, @Body() dto: Partial<ProductDto>) {
-    return await this.productService.update(id, dto);
+  update(@Param('id') id: string, @Body() product: Partial<Product>) {
+    return this.service.update(id, product);
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard, AdminGuard)
-  async delete(@Param('id') id: string) {
-    return await this.productService.delete(id);
+  remove(@Param('id') id: string) {
+    return this.service.remove(id);
   }
 }

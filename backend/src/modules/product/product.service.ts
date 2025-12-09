@@ -1,36 +1,55 @@
 import { Injectable } from '@nestjs/common';
-import { supabase } from '../../supabaseClient';
-import { ProductDto } from './dto/product.dto';
+import { SupabaseService } from '../../supabase/supabase.service';
+import { Product } from './product.dto';
 
 @Injectable()
 export class ProductService {
-  async getAll() {
-    const { data, error } = await supabase.from('products').select('*');
+  constructor(private readonly supabase: SupabaseService) {}
+
+  async findAll(): Promise<Product[]> {
+    const { data, error } = await this.supabase.getClient()
+      .from('products')
+      .select('*');
     if (error) throw error;
     return data;
   }
 
-  async getById(id: string) {
-    const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
+  async findOne(id: string): Promise<Product | null> {
+    const { data, error } = await this.supabase.getClient()
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .single();
     if (error) throw error;
     return data;
   }
 
-  async create(productDto: ProductDto) {
-    const { data, error } = await supabase.from('products').insert([productDto]).select();
+  async create(product: Product): Promise<Product> {
+    const { data, error } = await this.supabase.getClient()
+      .from('products')
+      .insert(product)
+      .select()
+      .single();
     if (error) throw error;
     return data;
   }
 
-  async update(id: string, productDto: Partial<ProductDto>) {
-    const { data, error } = await supabase.from('products').update(productDto).eq('id', id).select();
+  async update(id: string, product: Partial<Product>): Promise<Product> {
+    const { data, error } = await this.supabase.getClient()
+      .from('products')
+      .update(product)
+      .eq('id', id)
+      .select()
+      .single();
     if (error) throw error;
     return data;
   }
 
-  async delete(id: string) {
-    const { error } = await supabase.from('products').delete().eq('id', id);
+  async remove(id: string): Promise<void> {
+    const { error } = await this.supabase.getClient()
+      .from('products')
+      .delete()
+      .eq('id', id);
     if (error) throw error;
-    return { success: true };
   }
 }
