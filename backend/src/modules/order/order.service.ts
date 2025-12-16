@@ -25,7 +25,42 @@ export class OrderService {
     return data;
   }
 
+  private async ensureProductsExist(items: OrderItem[]) {
+    const ids = Array.from(new Set(items.map(item => item.productId).filter(Boolean)));
+    if (!ids.length) return;
+
+    const { data: existingProducts, error: selectError } = await this.supabase.getClient()
+      .from('products')
+      .select('id')
+      .in('id', ids);
+
+    if (selectError) throw selectError;
+
+    const existingIds = new Set(existingProducts?.map(row => row.id) ?? []);
+    const missingItems = ids
+      .filter(id => !existingIds.has(id))
+      .map(id => {
+        const item = items.find(i => i.productId === id);
+        return item ? {
+          id: item.productId,
+          name: item.productName,
+          price: item.price
+        } : null;
+      })
+      .filter(Boolean);
+
+    if (!missingItems.length) return;
+
+    const { error: insertError } = await this.supabase.getClient()
+      .from('products')
+      .insert(missingItems);
+
+    if (insertError) throw insertError;
+  }
+
   async create(order: Order): Promise<Order> {
+
+    await this.ensureProductsExist(order.items);
     const payload = {
       user_id: order.userId || null,
       customer_name: order.customerName,

@@ -11,6 +11,11 @@ export class ProfileController {
     return this.service.findAll();
   }
 
+  @Get(':id/dashboard')
+  getDashboard(@Param('id') id: string) {
+    return this.service.getDashboard(id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.service.findOne(id);
@@ -29,5 +34,25 @@ export class ProfileController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
+  }
+
+  @Put(':id/wishlist')
+  updateWishlist(@Param('id') id: string, @Body() body: { wishlist: any[] }) {
+    return this.service.updateWishlist(id, body.wishlist);
+  }
+
+  @Put(':id/addresses')
+  updateAddresses(@Param('id') id: string, @Body() body: { addresses: any[] }) {
+    return this.service.updateAddresses(id, body.addresses);
+  }
+
+  @Put(':id/payment-methods')
+  updatePaymentMethods(@Param('id') id: string, @Body() body: { paymentMethods: any[] }) {
+    return this.service.updatePaymentMethods(id, body.paymentMethods);
+  }
+
+  @Put(':id/notifications')
+  updateNotifications(@Param('id') id: string, @Body() body: { notifications: any[] }) {
+    return this.service.updateNotifications(id, body.notifications);
   }
 }

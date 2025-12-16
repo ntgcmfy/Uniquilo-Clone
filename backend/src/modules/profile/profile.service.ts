@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseService } from '../../supabase/supabase.service';
-import { Profile } from './profile.dto';
+import type { Profile } from './profile.dto';
 
 @Injectable()
 export class ProfileService {
@@ -24,8 +24,76 @@ export class ProfileService {
     return data;
   }
 
+  private parseJsonArray<T>(value: unknown, fallback: T[]): T[] {
+    if (Array.isArray(value)) return value as T[];
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : fallback;
+      } catch {
+        return fallback;
+      }
+    }
+    if (value && typeof value === 'object') return [value as T];
+    return fallback;
+  }
+
+  async getDashboard(userId: string) {
+    const [profileResult, ordersResult] = await Promise.all([
+      this.supabase.getClient()
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle(),
+      this.supabase.getClient()
+        .from('orders')
+        .select('*, order_items(*)')
+        .eq('user_id', userId)
+        .order('date', { ascending: false })
+    ]);
+
+    if (profileResult.error) throw profileResult.error;
+    if (ordersResult.error) throw ordersResult.error;
+
+    const profile = profileResult.data;
+    const orders = ordersResult.data || [];
+    const totalSpent = orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+
+    return {
+      profile: {
+        id: profile?.id || userId,
+        name: profile?.name || profile?.email || 'Khách hàng',
+        email: profile?.email || '',
+        phone: profile?.phone,
+        tier: profile?.tier || 'Regular',
+        loyaltyPoints: profile?.loyalty_points || 0,
+        totalOrders: orders.length,
+        totalSpent,
+        joinDate: profile?.join_date
+      },
+      orders: orders.map(order => ({
+        id: order.id,
+        date: order.date,
+        status: order.status || 'Chờ xử lý',
+        total: Number(order.total || 0),
+        items: Number(order.items_count || 0),
+        shippingAddress: order.shipping_address,
+        paymentMethod: order.payment_method,
+        trackingNumber: order.tracking_number,
+        products: (order.order_items || []).map(item => ({
+          name: item.product_name,
+          quantity: item.quantity,
+          price: Number(item.price || 0)
+        }))
+      })),
+      wishlist: this.parseJsonArray(profile?.wishlist, []),
+      addresses: this.parseJsonArray(profile?.addresses, []),
+      paymentMethods: this.parseJsonArray(profile?.payment_methods, []),
+      notifications: this.parseJsonArray(profile?.notifications, [])
+    };
+  }
+
   async create(profile: Profile): Promise<Profile> {
-    // Chuyển đổi sang snake_case nếu cần
     const payload = {
       ...profile,
       loyalty_points: profile.loyaltyPoints,
@@ -68,4 +136,37 @@ export class ProfileService {
       .eq('id', id);
     if (error) throw error;
   }
+
+  async updateWishlist(userId: string, wishlist: any[]): Promise<void> {
+    const { error } = await this.supabase.getClient()
+      .from('profiles')
+      .update({ wishlist })
+      .eq('id', userId);
+    if (error) throw error;
+  }
+
+  async updateAddresses(userId: string, addresses: any[]): Promise<void> {
+    const { error } = await this.supabase.getClient()
+      .from('profiles')
+      .update({ addresses })
+      .eq('id', userId);
+    if (error) throw error;
+  }
+
+  async updatePaymentMethods(userId: string, paymentMethods: any[]): Promise<void> {
+    const { error } = await this.supabase.getClient()
+      .from('profiles')
+      .update({ payment_methods: paymentMethods })
+      .eq('id', userId);
+    if (error) throw error;
+  }
+
+  async updateNotifications(userId: string, notifications: any[]): Promise<void> {
+    const { error } = await this.supabase.getClient()
+      .from('profiles')
+      .update({ notifications })
+      .eq('id', userId);
+    if (error) throw error;
+  }
+
 }
